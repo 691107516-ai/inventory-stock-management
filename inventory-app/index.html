@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockFlow | ระบบจัดการคลังสินค้า</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">📦</div>
+        <div>
+          <h1>StockFlow</h1>
+          <p>Inventory Management</p>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <a href="#dashboard" class="menu-item active">📊 แดชบอร์ด</a>
+        <a href="#inventory" class="menu-item">📦 รายการสินค้า</a>
+        <a href="#lowStock" class="menu-item">⚠️ สินค้าใกล้หมด</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>ข้อมูลถูกบันทึกไว้ใน<br />เบราว์เซอร์ของคุณ</p>
+        <button id="resetDataBtn" class="reset-data-btn">รีเซ็ตข้อมูลทั้งหมด</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">INVENTORY OVERVIEW</p>
+          <h2>จัดการคลังสินค้า</h2>
+          <p class="subtitle">ตรวจสอบจำนวนสินค้าและอัปเดตสต็อกได้ในที่เดียว</p>
+        </div>
+
+        <button id="openAddModalBtn" class="btn btn-primary">
+          <span>＋</span> เพิ่มสินค้า
+        </button>
+      </header>
+
+      <section id="dashboard" class="summary-grid">
+        <article class="summary-card blue">
+          <div class="summary-icon">📦</div>
+          <div>
+            <p>สินค้าทั้งหมด</p>
+            <h3 id="totalProducts">0</h3>
+            <span>รายการสินค้า</span>
+          </div>
+        </article>
+
+        <article class="summary-card green">
+          <div class="summary-icon">🧮</div>
+          <div>
+            <p>จำนวนสต็อกรวม</p>
+            <h3 id="totalStock">0</h3>
+            <span>ชิ้น / หน่วย</span>
+          </div>
+        </article>
+
+        <article class="summary-card orange">
+          <div class="summary-icon">💰</div>
+          <div>
+            <p>มูลค่าสินค้าคงคลัง</p>
+            <h3 id="totalValue">0</h3>
+            <span>บาท</span>
+          </div>
+        </article>
+
+        <article class="summary-card red">
+          <div class="summary-icon">⚠️</div>
+          <div>
+            <p>สินค้าใกล้หมด</p>
+            <h3 id="lowStockCount">0</h3>
+            <span>รายการที่ต้องตรวจสอบ</span>
+          </div>
+        </article>
+      </section>
+
+      <section id="inventory" class="inventory-section">
+        <div class="section-heading">
+          <div>
+            <h2>รายการสินค้า</h2>
+            <p>เพิ่ม แก้ไข และติดตามสต็อกสินค้าของคุณ</p>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <div class="search-box">
+            <span>🔍</span>
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="ค้นหาชื่อสินค้า หรือรหัสสินค้า..."
+            />
+          </div>
+
+          <select id="categoryFilter">
+            <option value="all">ทุกหมวดหมู่</option>
+          </select>
+
+          <select id="statusFilter">
+            <option value="all">ทุกสถานะ</option>
+            <option value="in-stock">พร้อมขาย</option>
+            <option value="low-stock">ใกล้หมด</option>
+            <option value="out-of-stock">หมดสต็อก</option>
+          </select>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>สินค้า</th>
+                <th>หมวดหมู่</th>
+                <th>ราคา/หน่วย</th>
+                <th>จำนวนคงเหลือ</th>
+                <th>สถานะ</th>
+                <th class="text-center">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="productTableBody"></tbody>
+          </table>
+
+          <div id="emptyState" class="empty-state hidden">
+            <span>📦</span>
+            <h3>ยังไม่มีสินค้าในคลัง</h3>
+            <p>เริ่มต้นเพิ่มสินค้าเพื่อจัดการสต็อกของคุณ</p>
+            <button id="emptyAddBtn" class="btn btn-primary">เพิ่มสินค้าแรก</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="lowStock" class="low-stock-section">
+        <div class="section-heading">
+          <div>
+            <h2>สินค้าใกล้หมด</h2>
+            <p>รายการสินค้าที่ควรสั่งซื้อเพิ่ม</p>
+          </div>
+        </div>
+
+        <div id="lowStockList" class="low-stock-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="productModal" class="modal hidden">
+    <div class="modal-backdrop" data-close-modal></div>
+
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">PRODUCT FORM</p>
+          <h2 id="modalTitle">เพิ่มสินค้าใหม่</h2>
+        </div>
+        <button class="icon-button" data-close-modal aria-label="ปิด">✕</button>
+      </div>
+
+      <form id="productForm">
+        <input type="hidden" id="productId" />
+
+        <div class="form-grid">
+          <div class="input-group">
+            <label for="productName">ชื่อสินค้า <span>*</span></label>
+            <input id="productName" type="text" placeholder="เช่น เมาส์ไร้สาย" required />
+          </div>
+
+          <div class="input-group">
+            <label for="productCode">รหัสสินค้า <span>*</span></label>
+            <input id="productCode" type="text" placeholder="เช่น IT-001" required />
+          </div>
+
+          <div class="input-group">
+            <label for="productCategory">หมวดหมู่ <span>*</span></label>
+            <input
+              id="productCategory"
+              type="text"
+              list="categoryOptions"
+              placeholder="เช่น อุปกรณ์ไอที"
+              required
+            />
+            <datalist id="categoryOptions"></datalist>
+          </div>
+
+          <div class="input-group">
+            <label for="productUnit">หน่วยนับ</label>
+            <input id="productUnit" type="text" value="ชิ้น" placeholder="เช่น ชิ้น, กล่อง" />
+          </div>
+
+          <div class="input-group">
+            <label for="productPrice">ราคาต่อหน่วย (บาท) <span>*</span></label>
+            <input id="productPrice" type="number" min="0" step="0.01" placeholder="0.00" required />
+          </div>
+
+          <div class="input-group">
+            <label for="productStock">จำนวนคงเหลือ <span>*</span></label>
+            <input id="productStock" type="number" min="0" step="1" placeholder="0" required />
+          </div>
+
+          <div class="input-group full-width">
+            <label for="productMinStock">จำนวนขั้นต่ำสำหรับแจ้งเตือน <span>*</span></label>
+            <input id="productMinStock" type="number" min="0" step="1" value="5" required />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal>ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">บันทึกสินค้า</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="stockModal" class="modal hidden">
+    <div class="modal-backdrop" data-close-stock-modal></div>
+
+    <div class="modal-content small-modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">STOCK UPDATE</p>
+          <h2>ปรับจำนวนสต็อก</h2>
+        </div>
+        <button class="icon-button" data-close-stock-modal aria-label="ปิด">✕</button>
+      </div>
+
+      <div class="stock-product-name" id="stockProductName">ชื่อสินค้า</div>
+
+      <form id="stockForm">
+        <input type="hidden" id="stockProductId" />
+
+        <div class="stock-action-buttons">
+          <button type="button" class="stock-action active" data-action="add">＋ เพิ่มสต็อก</button>
+          <button type="button" class="stock-action" data-action="remove">− ลดสต็อก</button>
+        </div>
+
+        <div class="input-group">
+          <label for="stockAmount">จำนวนที่ต้องการปรับ</label>
+          <input id="stockAmount" type="number" min="1" step="1" value="1" required />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" data-close-stock-modal>ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">ยืนยันการปรับสต็อก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
